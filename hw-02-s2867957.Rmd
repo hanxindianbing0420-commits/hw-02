@@ -32,20 +32,32 @@ data_5k_10k <- strava_runs %>%
 
 When you fill the missing part, remove the # symbol before running the code chunk and eval=FALSE
 
-```{r ex1a, out.width="80%", eval=FALSE}
+```{r ex1a, out.width="80%"}
 data_5k_10k %>% 
-  # filter(______) %>%
+  filter(gender=="M") %>%
   filter(!is.na(average.heart.rate..bpm.)) %>%
-  # ggplot(aes(x = __________)) + 
+  ggplot(aes(x = average.heart.rate..bpm.)) + 
   geom_histogram(bins = 20)
+
+data_5k_10k %>%
+  filter(gender == "M") %>%
+  summarise(
+    mean_hr = mean(average.heart.rate..bpm., na.rm = TRUE),
+    median_hr = median(average.heart.rate..bpm., na.rm = TRUE),
+    sd_hr = sd(average.heart.rate..bpm., na.rm = TRUE)
+  )
 ```
 
 
-_Write your text to answer exercise 1a here (Please delete this message before submission!)_
+This histogram is unimodal and with a main peak around 145-150 bpm. And most of the runs have an average heart rate between approximately 130 and 170 bpm. And there are only few observations at the lower and upper ends. This means the average heart rates in these male runners' 5k and 10k runs are concentrated in a central region but with some variability.The mean and median are both approximately 148 bpm, with a standard deviation of 17.2 bpm.
 
 
 ```{r ex1b, out.width="80%"}
-# Write your code for Ex1b here
+data_5k_10k %>% 
+  filter(gender=="F") %>%
+  filter(!is.na(average.heart.rate..bpm.)) %>%
+  ggplot(aes(x = average.heart.rate..bpm.)) + 
+  geom_histogram(bins = 20)
 
 
 
@@ -54,29 +66,62 @@ _Write your text to answer exercise 1a here (Please delete this message before s
 ```
 
 
-_Write your text to answer exercise 1b here (Please delete this message before submission!)_
+This histogram is bimodal and with two main peak. The first one is around 145-150 bpm and the other one is around 165-170 bpm. And most of the female runs have an average heart rate between approximately 135-170 bpm. And there are only few observations at the lower and upper ends, which means the average heart rates in these female runners' 5k and 10 k runs are concentrated in a central region. And compared with the male histogram, the female histogram  is less smooth and have two peaks rather than one clear central peak. And the average heart rates in female runs appear slightly higher than in male runs.
 
 
 ## Exercise 2
 
-```{r ex2, out.width = "80%"}
-# Write your code to answer exercise 2a here
-
-
+```{r ex2a}
+Pace_data<-data_5k_10k %>%
+filter(gender=="M" | gender=="F")%>%
+mutate(
+pace=(elapsed.time..s./60)/(distance..m./1000)
+)
+Pace_data %>%
+  ggplot(aes(x=event,y=pace))+
+  geom_boxplot()+
+  facet_wrap(~gender)+
+  labs(
+  title = "Pace in 5K and 10K runs by gender",
+  x = "Distance",
+  y = "Pace (minutes per km)"
+)
 
 
 ```
 
-_Write your text to answer exercise 2b here (Please delete this message before submission!)_
-
+In this dataset, male runners have a lower median pace than female runners for both 5K and 10K although small part of the distributions are overlap. And for male runners, the median pace of 10K is lower than 5K, but the female median paces are similar for both distances. And all groups have some high pace outliers.
 
 
 
 ## Exercise 3
 
 ```{r ex3, out.width = "80%"}
-# Write your code to answer exercise 3 here
-
+runner_data<-strava_runs %>%
+  group_by(athlete)%>%
+  mutate(
+    mean_distance_km=mean(distance..m.,na.rm=TRUE)/1000
+  )%>%
+  ungroup()%>%
+  filter(mean_distance_km > 13 | mean_distance_km < 7) %>%
+  mutate(
+    runner_type=ifelse(mean_distance_km>13,"Long-distance runner","Short-distance runner"),
+    distance_km = distance..m. / 1000,
+    speed = distance..m. / elapsed.time..s.
+  )
+runner_data %>%
+  ggplot(aes(x = distance_km,y = speed,color = runner_type)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(
+    values = c("Long-distance runner" = "orange","Short-distance runner" = "forestgreen")
+  ) +
+   labs(
+    title = "Speed vs Distance for Long- and Short-Distance Runners",
+    x = "Run distance (km)",
+    y = "Average speed (m/s)",
+    color = "Runner type"
+  )
 
 
 
@@ -84,7 +129,7 @@ _Write your text to answer exercise 2b here (Please delete this message before s
 ```
 
 
-_Write your text to answer exercise 3b here (Please delete this message before submission!)_
+The plot shows that the speed of both groups tends to decrease as the distance increases. And the line for long-distance runners is flatter, but the line for short-distance runners drops more clearly. This suggests that long-distance runners may maintain their speed better over longer distances, which supports the idea in the question. And there is overlap between the two groups, so not every runner follows the same pattern.
 
 
 ## Exercise 4
