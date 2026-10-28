@@ -135,7 +135,38 @@ The plot shows that the speed of both groups tends to decrease as the distance i
 ## Exercise 4
 
 ```{r ex4, out.width = "80%"}
-# Write your code to answer exercise 4 here
+gender_data <- strava_runs %>%
+  filter(!is.na(gender)) %>%
+  group_by(gender) %>%
+  summarise(
+    mean_distance = mean(distance..m., na.rm = TRUE) / 1000,
+    mean_time = mean(elapsed.time..s., na.rm = TRUE) / 60
+  )
+
+gender_long <- gender_data %>%
+  pivot_longer(
+    cols = c(mean_distance, mean_time),
+    names_to = "measure",
+    values_to = "value"
+  )
+
+gender_long %>%
+  ggplot(aes(x = gender, y = value, fill = gender)) +
+  geom_col() +
+  facet_wrap(
+    ~measure,
+    scales = "free_y",
+    labeller = as_labeller(c(
+      mean_distance = "Mean distance (km)",
+      mean_time = "Mean elapsed time (minutes)"
+    ))
+  ) +
+  labs(
+    title = "Mean running distance and elapsed time by gender",
+    x = "Gender",
+    y = "Mean value",
+    fill = "Gender"
+  )
 
 
 
@@ -144,8 +175,7 @@ The plot shows that the speed of both groups tends to decrease as the distance i
 ```
 
 
-_Write your text to answer exercise 4b here (Please delete this message before submission!)_
-
+In this dataset, male runners have a slightly higher mean running distance than female runners. And the mean elapsed times are very similar for both genders, at just over 60 minutes. This means that male runners cover a longer distance on average while spending about the same amount of time running.
 
 
 
